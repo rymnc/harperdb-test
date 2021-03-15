@@ -2,6 +2,14 @@ use harperdb::{ HarperConfig, Harper };
 use harperdb as harper;
 use serde::{Deserialize, Serialize};
 use std::{error::Error};
+use std::env::var;
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref PASSWORD: String = var("HARPERDB_PASS").unwrap();
+    static ref USER: String = var("HARPERDB_USER").unwrap();
+    static ref URL: String = var("HARPERDB_URL").unwrap();
+}
 
 #[macro_use]
 extern crate serde_json;
@@ -15,22 +23,13 @@ struct HorrorMovieRecord{
     __updatedtime__: usize,
 }
 
-fn getEnv(var: &str) -> &'static str {
-    match option_env!(format!("{}", var)) {
-        Some(s) =>s,
-        None => panic!("Cannot find {} in ENV", var)
-    }
-}
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let url = getEnv("HARPERDB_URL");
-    let username = getEnv("HARPERDB_USER");
-    let password = getEnv("HARPERDB_PASS");
     let schema = "movies";
     let config: HarperConfig = HarperConfig {
-        url,
-        username,
-        password,
+        url: &*URL,
+        username: &*USER,
+        password: &*PASSWORD,
         schema,
     };
     let harper_client = Harper::new(config);
